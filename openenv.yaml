@@ -1,0 +1,138 @@
+name: bank-email-triage-v1
+version: "1.0.0"
+description: >
+  OpenEnv environment for training AI agents on bank customer support email triage.
+  Simulates real-world tasks performed by bank support staff: categorizing emails,
+  routing to correct teams, setting priority, and drafting professional responses.
+  Domain: Indian retail banking (fraud disputes, account inquiries, loan complaints,
+  card services, general feedback). 30 synthetic bank support emails across 6 categories.
+
+tags:
+  - openenv
+  - email-triage
+  - customer-support
+  - banking
+  - nlp
+  - rag
+
+author: "Bank Email Triage OpenEnv"
+license: MIT
+
+environment:
+  type: text
+  modality: language
+  language: en
+  domain: banking / customer-support
+
+api:
+  base_url: "http://localhost:7860"
+  endpoints:
+    reset: "POST /reset"
+    step:  "POST /step"
+    state: "GET  /state"
+  spec_version: "1.0"
+
+observation_space:
+  type: object
+  fields:
+    email_id:              {type: string, description: "Unique email identifier"}
+    sender:                {type: string, description: "Sender email address"}
+    subject:               {type: string, description: "Email subject line"}
+    body:                  {type: string, description: "Full email body text"}
+    timestamp:             {type: string, description: "ISO-8601 timestamp"}
+    task_id:               {type: string, enum: [task_1, task_2, task_3]}
+    task_description:      {type: string, description: "Natural language task instruction"}
+    step_number:           {type: integer, description: "Current step in episode"}
+    echoed_message:        {type: string, nullable: true, description: "Last action echo for logging"}
+    available_categories:  {type: array, items: string}
+    available_priorities:  {type: array, items: string}
+    available_departments: {type: array, items: string}
+
+action_space:
+  type: object
+  fields:
+    category:
+      type: string
+      required: true
+      enum: [fraud_dispute, account_inquiry, loan_complaint, card_services, general_feedback, unrelated]
+    priority:
+      type: string
+      required: false  # required for task_2 and task_3
+      enum: [high, medium, low]
+    department:
+      type: string
+      required: false  # required for task_2 and task_3
+      enum: [fraud_team, account_services, loans, card_operations, customer_care, no_action]
+    response_draft:
+      type: string
+      required: false  # required for task_3
+      description: "Draft reply email to send to the customer"
+    raw_message:
+      type: string
+      required: false
+      description: "Raw LLM output before structured parsing"
+
+reward:
+  type: float
+  range: [0.0, 1.0]
+  shape: shaped  # partial credit given per task
+  breakdown:
+    task_1: {category: 1.0}
+    task_2: {category: 0.4, priority: 0.3, department: 0.3}
+    task_3: {category: 0.2, priority: 0.2, department: 0.2, response_quality: 0.4}
+
+tasks:
+  - id: task_1
+    name: "Bank Email Categorization"
+    difficulty: easy
+    max_steps: 1
+    description: >
+      Classify the bank support email into the correct category.
+      Available categories: fraud_dispute, account_inquiry, loan_complaint,
+      card_services, general_feedback, unrelated.
+    success_threshold: 1.0
+
+  - id: task_2
+    name: "Bank Email Triage & Routing"
+    difficulty: medium
+    max_steps: 1
+    description: >
+      Classify the email AND assign priority (high/medium/low) AND route to
+      the correct department (fraud_team, account_services, loans,
+      card_operations, customer_care, no_action).
+    success_threshold: 0.8
+
+  - id: task_3
+    name: "Bank Email Full Response"
+    difficulty: hard
+    max_steps: 1
+    description: >
+      Full triage (category + priority + department) PLUS draft a professional
+      customer response email that acknowledges the issue, references bank policy,
+      and provides actionable next steps and resolution timeline.
+    success_threshold: 0.7
+
+dataset:
+  emails: 30
+  categories:
+    fraud_dispute:    5
+    account_inquiry:  5
+    loan_complaint:   5
+    card_services:    5
+    general_feedback: 5
+    unrelated:        5
+
+baseline:
+  script: inference.py
+  model: "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  api_provider: "Together AI"
+  expected_scores:
+    task_1: 0.75
+    task_2: 0.55
+    task_3: 0.42
+
+docker:
+  image: bank-email-triage-env
+  port: 7860
+  build_cmd: "docker build -t bank-email-triage-env ."
+  run_cmd: "docker run -p 7860:7860 bank-email-triage-env"
