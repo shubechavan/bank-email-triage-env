@@ -120,7 +120,7 @@ async def main():
     # If API_BASE_URL is set, it's used for LLM. If not, use generic together/openai
     llm_api_base = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
     model_name = os.getenv("MODEL_NAME", "gpt-4o")
-    hf_token = os.getenv("HF_TOKEN", os.getenv("OPENAI_API_KEY", "dummy-key"))
+    hf_token = os.getenv("HF_TOKEN")
     
     # Init OpenAI client routing it to API_BASE_URL with the HF_TOKEN as api_key
     client = AsyncOpenAI(
