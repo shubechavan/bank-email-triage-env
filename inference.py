@@ -46,7 +46,7 @@ async def run_task(task_id: str, env_url: str, client: AsyncOpenAI, model_name: 
     history: List[str] = []
     rewards: List[float] = []
     steps_taken = 0
-    score = 0.0
+    score = 0.01
     success = False
     
     # 1. Start Log
@@ -86,7 +86,7 @@ async def run_task(task_id: str, env_url: str, client: AsyncOpenAI, model_name: 
                 step_data = step_resp.json()
             
             obs = step_data["observation"]
-            reward = step_data["reward"]
+            reward = min(max(step_data["reward"], 0.01), 0.99)
             done = step_data["done"]
             error = None
             

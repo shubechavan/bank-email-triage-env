@@ -126,11 +126,11 @@ def _score_response(action: EmailAction, email: BankEmail) -> float:
     Penalty applied after: can go to 0.80 minimum if all criteria met.
     """
     if not action.response_draft:
-        return 0.0
+        return 0.01
 
     draft = action.response_draft.lower()
     words = draft.split()
-    score = 0.0
+    score = 0.01
 
     # 1. Minimum length (>50 words signals meaningful response)
     if len(words) >= 50:
@@ -212,7 +212,7 @@ def _extract_key_nouns(text: str) -> set:
 def grade_task_1(action: EmailAction, email: BankEmail) -> EmailReward:
     """
     Task 1 Grader — Categorization only.
-    Score: 1.0 for correct category, 0.0 for wrong.
+    Score: 0.99 for correct category, 0.01 for wrong (strictly within 0-1).
     """
     cat_score = _score_category(action, email)
     penalty = 0.0
@@ -222,7 +222,7 @@ def grade_task_1(action: EmailAction, email: BankEmail) -> EmailReward:
     if action.response_draft and len(action.response_draft) > 10:
         penalty = -0.0  # No penalty, just ignore extra fields in task_1
 
-    total = round(min(max(cat_score + penalty, 0.01), 0.99), 3)
+    total = round(max(min(cat_score + penalty, 0.99), 0.01), 3)
     feedback = (
         f"Category: {'✓ correct' if cat_score >= 0.99 else f'✗ wrong (got {action.category}, expected {email.true_category})'}"
     )
@@ -252,10 +252,10 @@ def grade_task_2(action: EmailAction, email: BankEmail) -> EmailReward:
         penalty = -0.05  # Minor penalty for completely wrong routing
 
     total = round(
-        min(max(
+        max(min(
             0.4 * cat_score + 0.3 * pri_score + 0.3 * dept_score + penalty,
-            0.01
-        ), 0.99),
+            0.99
+        ), 0.01),
         3,
     )
 
@@ -291,14 +291,14 @@ def grade_task_3(action: EmailAction, email: BankEmail) -> EmailReward:
         penalty = -0.10  # Penalize missing/trivial response for hard task
 
     total = round(
-        min(max(
+        max(min(
             0.2 * cat_score +
             0.2 * pri_score +
             0.2 * dept_score +
             0.4 * resp_score +
             penalty,
-            0.01
-        ), 0.99),
+            0.99
+        ), 0.01),
         3,
     )
 
