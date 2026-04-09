@@ -248,7 +248,7 @@ def grade_task_2(action: EmailAction, email: BankEmail) -> EmailReward:
 
     # Penalty: if category wrong AND department wrong = double-wrong is penalized
     penalty = 0.0
-    if cat_score == 0.0 and dept_score == 0.0:
+    if cat_score <= 0.01 and dept_score <= 0.01:
         penalty = -0.05  # Minor penalty for completely wrong routing
 
     total = round(

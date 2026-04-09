@@ -74,7 +74,7 @@ action_space:
 
 reward:
   type: float
-  range: [0.0, 1.0]
+  range: [0.01, 0.99]
   shape: shaped  # partial credit given per task
   breakdown:
     task_1: {category: 1.0}

@@ -84,7 +84,7 @@ class BankEmailTriageEnv:
 
         return StepResult(
             observation=obs,
-            reward=0.0,
+            reward=0.01,
             done=False,
             info={"message": "Environment reset. Submit your action via step()."},
         )
@@ -108,7 +108,7 @@ class BankEmailTriageEnv:
             obs = self._build_observation(echo=str(action.category))
             return StepResult(
                 observation=obs,
-                reward=0.0,
+                reward=0.01,
                 done=True,
                 info={"warning": "Episode already done. Call reset() to start a new episode."},
             )
