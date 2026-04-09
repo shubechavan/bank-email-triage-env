@@ -222,7 +222,7 @@ def grade_task_1(action: EmailAction, email: BankEmail) -> EmailReward:
     if action.response_draft and len(action.response_draft) > 10:
         penalty = -0.0  # No penalty, just ignore extra fields in task_1
 
-    total = round(min(max(cat_score + penalty, 0.0), 1.0), 3)
+    total = round(min(max(cat_score + penalty, 0.01), 0.99), 3)
     feedback = (
         f"Category: {'✓ correct' if cat_score == 1.0 else f'✗ wrong (got {action.category}, expected {email.true_category})'}"
     )
@@ -254,8 +254,8 @@ def grade_task_2(action: EmailAction, email: BankEmail) -> EmailReward:
     total = round(
         min(max(
             0.4 * cat_score + 0.3 * pri_score + 0.3 * dept_score + penalty,
-            0.0
-        ), 1.0),
+            0.01
+        ), 0.99),
         3,
     )
 
@@ -297,8 +297,8 @@ def grade_task_3(action: EmailAction, email: BankEmail) -> EmailReward:
             0.2 * dept_score +
             0.4 * resp_score +
             penalty,
-            0.0
-        ), 1.0),
+            0.01
+        ), 0.99),
         3,
     )
 
