@@ -104,11 +104,11 @@ class EmailAction(BaseModel):
 
 class EmailReward(BaseModel):
     """Breakdown of the reward signal."""
-    total:             float = Field(..., ge=0.0, le=1.0)
-    category_score:    float = Field(0.0, ge=0.0, le=1.0)
-    priority_score:    float = Field(0.0, ge=0.0, le=1.0)
-    department_score:  float = Field(0.0, ge=0.0, le=1.0)
-    response_score:    float = Field(0.0, ge=0.0, le=1.0)
+    total:             float = Field(..., gt=0.0, lt=1.0)
+    category_score:    float = Field(0.01, gt=0.0, lt=1.0)
+    priority_score:    float = Field(0.01, gt=0.0, lt=1.0)
+    department_score:  float = Field(0.01, gt=0.0, lt=1.0)
+    response_score:    float = Field(0.01, gt=0.0, lt=1.0)
     penalty:           float = Field(0.0, le=0.0)
     feedback:          str   = ""
 

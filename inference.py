@@ -104,7 +104,7 @@ async def run_task(task_id: str, env_url: str, client: AsyncOpenAI, model_name: 
         # Calculate final score
         # Since it's 1 step per episode, score is just the reward.
         score = sum(rewards)
-        score = min(max(score, 0.0), 1.0)
+        score = min(max(score, 0.01), 0.99)
         
         # Success thresholds defined in openenv.yaml
         thresholds = {"task_1": 0.95, "task_2": 0.8, "task_3": 0.7}

@@ -75,39 +75,39 @@ TASK_REGISTRY: dict[str, TaskInfo] = {
 # ─────────────────────────────────────────────
 
 def _score_category(action: EmailAction, email: BankEmail) -> float:
-    """Exact match on category. No partial credit — wrong category = 0."""
-    return 1.0 if action.category == email.true_category else 0.0
+    """Exact match on category. No partial credit — wrong category = 0.01."""
+    return 0.99 if action.category == email.true_category else 0.01
 
 
 def _score_priority(action: EmailAction, email: BankEmail) -> float:
     """
     Priority scoring with partial credit:
-    - Exact match: 1.0
+    - Exact match: 0.99
     - One level off (e.g. HIGH predicted as MEDIUM): 0.4
-    - Two levels off (HIGH predicted as LOW): 0.0
+    - Two levels off (HIGH predicted as LOW): 0.01
     """
     if action.priority is None:
-        return 0.0
+        return 0.01
     levels = [Priority.HIGH, Priority.MEDIUM, Priority.LOW]
     try:
         pred_idx = levels.index(action.priority)
         true_idx = levels.index(email.true_priority)
         diff = abs(pred_idx - true_idx)
         if diff == 0:
-            return 1.0
+            return 0.99
         elif diff == 1:
             return 0.4
         else:
-            return 0.0
+            return 0.01
     except ValueError:
-        return 0.0
+        return 0.01
 
 
 def _score_department(action: EmailAction, email: BankEmail) -> float:
     """Exact match on department. No partial credit — routing matters."""
     if action.department is None:
-        return 0.0
-    return 1.0 if action.department == email.true_department else 0.0
+        return 0.01
+    return 0.99 if action.department == email.true_department else 0.01
 
 
 def _score_response(action: EmailAction, email: BankEmail) -> float:
@@ -186,7 +186,7 @@ def _score_response(action: EmailAction, email: BankEmail) -> float:
     if generic_count >= 2 and matched_body == 0:
         score -= 0.10  # Penalize pure-template responses with no specificity
 
-    return round(min(max(score, 0.0), 1.0), 3)
+    return round(min(max(score, 0.01), 0.99), 3)
 
 
 def _extract_key_nouns(text: str) -> set:
@@ -224,14 +224,14 @@ def grade_task_1(action: EmailAction, email: BankEmail) -> EmailReward:
 
     total = round(min(max(cat_score + penalty, 0.01), 0.99), 3)
     feedback = (
-        f"Category: {'✓ correct' if cat_score == 1.0 else f'✗ wrong (got {action.category}, expected {email.true_category})'}"
+        f"Category: {'✓ correct' if cat_score >= 0.99 else f'✗ wrong (got {action.category}, expected {email.true_category})'}"
     )
     return EmailReward(
         total=total,
         category_score=cat_score,
-        priority_score=0.0,
-        department_score=0.0,
-        response_score=0.0,
+        priority_score=0.01,
+        department_score=0.01,
+        response_score=0.01,
         penalty=penalty,
         feedback=feedback,
     )
@@ -260,16 +260,16 @@ def grade_task_2(action: EmailAction, email: BankEmail) -> EmailReward:
     )
 
     feedback_parts = [
-        f"Category: {'✓' if cat_score == 1.0 else f'✗ (got {action.category}, expected {email.true_category})'}",
-        f"Priority: {'✓' if pri_score == 1.0 else f'partial({pri_score})' if pri_score > 0 else f'✗ (got {action.priority}, expected {email.true_priority})'}",
-        f"Department: {'✓' if dept_score == 1.0 else f'✗ (got {action.department}, expected {email.true_department})'}",
+        f"Category: {'✓' if cat_score >= 0.99 else f'✗ (got {action.category}, expected {email.true_category})'}",
+        f"Priority: {'✓' if pri_score >= 0.99 else f'partial({pri_score})' if pri_score > 0 else f'✗ (got {action.priority}, expected {email.true_priority})'}",
+        f"Department: {'✓' if dept_score >= 0.99 else f'✗ (got {action.department}, expected {email.true_department})'}",
     ]
     return EmailReward(
         total=total,
         category_score=cat_score,
         priority_score=pri_score,
         department_score=dept_score,
-        response_score=0.0,
+        response_score=0.01,
         penalty=penalty,
         feedback=" | ".join(feedback_parts),
     )
@@ -303,10 +303,10 @@ def grade_task_3(action: EmailAction, email: BankEmail) -> EmailReward:
     )
 
     feedback_parts = [
-        f"Category: {'✓' if cat_score == 1.0 else f'✗({action.category})'}",
-        f"Priority: {'✓' if pri_score == 1.0 else f'~({pri_score})' if pri_score > 0 else f'✗({action.priority})'}",
-        f"Dept: {'✓' if dept_score == 1.0 else f'✗({action.department})'}",
-        f"Response quality: {resp_score:.2f}/1.0",
+        f"Category: {'✓' if cat_score >= 0.99 else f'✗({action.category})'}",
+        f"Priority: {'✓' if pri_score >= 0.99 else f'~({pri_score})' if pri_score > 0.01 else f'✗({action.priority})'}",
+        f"Dept: {'✓' if dept_score >= 0.99 else f'✗({action.department})'}",
+        f"Response quality: {resp_score:.2f}/0.99",
     ]
     return EmailReward(
         total=total,
