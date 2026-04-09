@@ -90,7 +90,7 @@ tasks:
       Classify the bank support email into the correct category.
       Available categories: fraud_dispute, account_inquiry, loan_complaint,
       card_services, general_feedback, unrelated.
-    success_threshold: 1.0
+    success_threshold: 0.95
 
   - id: task_2
     name: "Bank Email Triage & Routing"

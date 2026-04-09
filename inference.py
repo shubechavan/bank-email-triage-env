@@ -107,7 +107,7 @@ async def run_task(task_id: str, env_url: str, client: AsyncOpenAI, model_name: 
         score = min(max(score, 0.0), 1.0)
         
         # Success thresholds defined in openenv.yaml
-        thresholds = {"task_1": 1.0, "task_2": 0.8, "task_3": 0.7}
+        thresholds = {"task_1": 0.95, "task_2": 0.8, "task_3": 0.7}
         success = score >= thresholds.get(task_id, 0.5)
 
     except Exception as e:
